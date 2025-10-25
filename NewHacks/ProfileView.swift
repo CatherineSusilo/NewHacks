@@ -10,6 +10,7 @@ import SwiftUI
 struct ProfileView: View {
     @ObservedObject var timeTrackingManager: TimeTrackingManager
     @State private var fakeTimeHistory: [DailyTimeEntry] = []
+    @State private var showingCalendar = false
     
     var body: some View {
         NavigationView {
@@ -29,17 +30,36 @@ struct ProfileView: View {
                     .padding(.horizontal)
                     .padding(.top)
                     
-                    // Bar Chart
+                    // Bar Chart with Swipe to Calendar
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Daily Watch Time")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal)
+                        HStack {
+                            Text("Daily Watch Time")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                            
+                            Spacer()
+                            
+                            Text("Swipe right →")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                                .opacity(0.7)
+                        }
+                        .padding(.horizontal)
                         
                         if !fakeTimeHistory.isEmpty {
                             BarChartView(data: fakeTimeHistory)
                                 .frame(height: 240)
                                 .padding(.horizontal)
+                                .gesture(
+                                    DragGesture()
+                                        .onEnded { value in
+                                            if value.translation.width > 50 { // Swipe right
+                                                withAnimation(.easeInOut(duration: 0.3)) {
+                                                    showingCalendar = true
+                                                }
+                                            }
+                                        }
+                                )
                         } else {
                             ProgressView("Loading time history...")
                                 .frame(height: 240)
@@ -92,6 +112,9 @@ struct ProfileView: View {
                 }
             }
             .navigationBarHidden(true)
+        }
+        .sheet(isPresented: $showingCalendar) {
+            MonthlyCalendarView(timeTrackingManager: timeTrackingManager)
         }
         .onAppear {
             generateFakeData()
