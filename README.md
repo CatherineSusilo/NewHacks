@@ -76,7 +76,20 @@ When you exceed your daily time limit:
 ### Architecture
 ```swift
 ReelCage/
-├── Models/          # Data structures
-├── Views/           # SwiftUI components  
-├── ViewModels/      # Business logic
-└── Utilities/       # Helper classes
+├── ReelCageApp.swift
+├── Models/
+│   ├── Reel.swift
+│   ├── UserProfile.swift
+│   └── AppState.swift
+├── Views/
+│   ├── ContentView.swift
+│   ├── ReelPlayerView.swift
+│   ├── OnboardingView.swift
+│   ├── InterventionView.swift
+│   └── StatsView.swift
+├── ViewModels/
+│   ├── ReelManager.swift
+│   └── UserManager.swift
+└── Utilities/
+    ├── LagManager.swift
+    └── MockData.swift
