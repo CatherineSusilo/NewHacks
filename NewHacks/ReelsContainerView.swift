@@ -11,7 +11,7 @@ struct ReelsContainerView: View {
     @State private var currentIndex = 0
     @State private var dragOffset: CGFloat = 0
     @State private var videos: [URL] = []
-    @StateObject private var timeTrackingManager = TimeTrackingManager()
+    @ObservedObject var timeTrackingManager: TimeTrackingManager
 
     var body: some View {
         GeometryReader { geometry in
@@ -28,7 +28,7 @@ struct ReelsContainerView: View {
                         }
                         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                         .ignoresSafeArea()
-                        .onChange(of: currentIndex) { newIndex in
+                        .onChange(of: currentIndex) { _, newIndex in
                             print("Switched to video index: \(newIndex)")
                             // Ensure tracking continues when switching videos
                             if !timeTrackingManager.isCurrentlyTracking {
@@ -115,5 +115,5 @@ struct ReelsContainerView: View {
 }
 
 #Preview {
-    ReelsContainerView()
+    ReelsContainerView(timeTrackingManager: TimeTrackingManager())
 }
