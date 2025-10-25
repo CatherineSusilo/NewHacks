@@ -36,40 +36,40 @@ Reel Cage fights fire with fire. We use the same addictive mechanics against the
 Normal Mode → Warning (80%) → Minor Lag (100%) → Lag of Shame (100%+)
 
 
-### 3. The "Lag of Shame" ⏳
+### 3. The "Lag of Shame" 
 When you exceed your daily time limit:
 - **Phase 1**: 1-second delay between reels
 - **Phase 2**: 3-second forced pause with dimmed screen  
 - **Phase 3**: 5-second intervention with streak protection choice
 
-### 4. Focus Streak System 🔥
+### 4. Focus Streak System 
 - Duolingo-style consecutive day counter
 - Save your streak by closing the app when prompted
 - Break your streak if you choose to continue scrolling
 - Visual progress tracking and achievements
 
-## 📱 Features
+## Features
 
 ### Core Functionality
-- 🎭 Interest-based content curation
-- ⏰ Smart daily time limits
-- 🛑 Progressive lag injection
-- 🔥 Streak-based motivation
-- 📊 Usage analytics dashboard
+- Interest-based content curation
+- Smart daily time limits
+- Progressive lag injection
+- Streak-based motivation
+- Usage analytics dashboard
 
 ### User Experience  
-- 🎨 Clean, intuitive SwiftUI interface
-- 📈 Real-time usage tracking
-- 🎯 Personalized intervention timing
-- 🏆 Achievement system
-- 📱 Native iOS feel
+- Clean, intuitive SwiftUI interface
+- Real-time usage tracking
+- Personalized intervention timing
+- Achievement system
+- Native iOS feel
 
 ### Wellness Tools
-- ⏱️ Time saved statistics
-- 🧘 Breathing exercises on exit
-- 📝 Activity suggestions
-- 🔔 Smart notifications
-- 📅 Weekly progress reports
+- Time saved statistics
+- Breathing exercises on exit
+- Activity suggestions
+- Smart notifications
+- Weekly progress reports
 
 ## 🛠️ Technical Implementation
 
