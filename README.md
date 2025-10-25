@@ -57,23 +57,35 @@ When you exceed your daily time limit:
 
 ### Architecture
 ```swift
-ReelCage/
-├── ReelCageApp.swift
-├── Models/
-│   ├── Reel.swift
-│   ├── UserProfile.swift
-│   └── AppState.swift
-├── Views/
-│   ├── ContentView.swift
-│   ├── VideoPlayerView.swift
-│   ├── OnboardingView.swift
-│   └── StatsView.swift
-├── ViewModels/
-│   ├── ContentViewModel.swift
-│   └── StreakManager.swift
-├── Managers/
-│   ├── LagManager.swift
-│   ├── TimeTracker.swift
-│   └── ContentManager.swift
-└── Utilities/
-    └── Constants.swift
+ScrollJail/
+├── ScrollJail/
+│   ├── Models/
+│   │   ├── User.swift
+│   │   ├── Reel.swift
+│   │   ├── Streak.swift
+│   │   └── AppSettings.swift
+│   ├── ViewModels/
+│   │   ├── ContentViewModel.swift
+│   │   ├── StreakViewModel.swift
+│   │   └── LagManager.swift
+│   ├── Views/
+│   │   ├── ContentView.swift
+│   │   ├── VideoPlayerView.swift
+│   │   ├── StreakView.swift
+│   │   ├── OnboardingView.swift
+│   │   └── SettingsView.swift
+│   ├── Services/
+│   │   ├── ContentService.swift
+│   │   ├── TimeTracker.swift
+│   │   └── MascotManager.swift
+│   └── Utilities/
+│       ├── LagEngine.swift
+│       └── Constants.swift
+├── Assets/
+│   ├── Mascot/
+│   │   ├── mascot_normal.png
+│   │   ├── mascot_warning.png
+│   │   └── mascot_sad.png
+│   └── AppIcon.appiconset
+└── Preview Content/
+    └── MockData.swift
