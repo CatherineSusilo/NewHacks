@@ -2,7 +2,7 @@
 
 **Break the scroll addiction with progressive resistance**
 
-Reel Cage is an innovative iOS app that fights infinite scrolling addiction by using psychological reverse-engineering. Instead of blunt app blocking, it brings TikTok/Instagram-style content into a controlled environment where we reshape your scrolling habits through smart interventions.
+A digital wellness app that helps you break free from endless scrolling on TikTok and Instagram Reels. Scroll Jail turns your destructive scrolling habit into a game where you earn points for closing the app.
 
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
@@ -28,13 +28,12 @@ Reel Cage fights fire with fire. We use the same addictive mechanics against the
 ## How It Works
 
 ### 1. Personalized Content
-- Select your interests during onboarding (gaming, comedy, cooking, etc.)
-- Get a curated feed of trending content in those categories
-- All within our compliant wrapper app
+- Dual Feed Support TikTok & Instagram Integration: Access both platforms in one controlled environment
+- Category-Based Content: Users select interests during onboarding (Gaming, Comedy, Sports, Cooking, Tech, etc.)
+- Smart Content Curation: Personalized feed based on selected categories and engagement
 
 ### 2. Progressive Intervention System
 Normal Mode → Warning (80%) → Minor Lag (100%) → Lag of Shame (100%+)
-
 
 ### 3. The "Lag of Shame" 
 When you exceed your daily time limit:
@@ -48,28 +47,11 @@ When you exceed your daily time limit:
 - Break your streak if you choose to continue scrolling
 - Visual progress tracking and achievements
 
-## Features
-
-### Core Functionality
-- Interest-based content curation
-- Smart daily time limits
-- Progressive lag injection
-- Streak-based motivation
-- Usage analytics dashboard
-
-### User Experience  
-- Clean, intuitive SwiftUI interface
-- Real-time usage tracking
-- Personalized intervention timing
-- Achievement system
-- Native iOS feel
-
-### Wellness Tools
-- Time saved statistics
-- Breathing exercises on exit
-- Activity suggestions
-- Smart notifications
-- Weekly progress reports
+## The Psychology Behind Scroll Jail
+- Loss Aversion: Protect your streak from resetting to zero
+- Progressive Difficulty: Gradually increasing barriers to excessive use
+- Positive Reinforcement: Celebrate wins and progress
+- Mindful Interruptions: Break autopilot scrolling behavior
 
 ## 🛠️ Technical Implementation
 
@@ -83,13 +65,15 @@ ReelCage/
 │   └── AppState.swift
 ├── Views/
 │   ├── ContentView.swift
-│   ├── ReelPlayerView.swift
+│   ├── VideoPlayerView.swift
 │   ├── OnboardingView.swift
-│   ├── InterventionView.swift
 │   └── StatsView.swift
 ├── ViewModels/
-│   ├── ReelManager.swift
-│   └── UserManager.swift
+│   ├── ContentViewModel.swift
+│   └── StreakManager.swift
+├── Managers/
+│   ├── LagManager.swift
+│   ├── TimeTracker.swift
+│   └── ContentManager.swift
 └── Utilities/
-    ├── LagManager.swift
-    └── MockData.swift
+    └── Constants.swift
