@@ -14,6 +14,8 @@ struct ReelsContainerView: View {
     @State private var showBlackScreen = false
     @State private var blackScreenTimer: Timer?
     @State private var blackScreenCountdown = 3
+    @State private var videoPlayers: [Int: ReelsVideoPlayer] = [:]
+    @State private var shouldPauseVideos = false
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -68,7 +70,7 @@ struct ReelsContainerView: View {
                     ZStack {
                         TabView(selection: $currentIndex) {
                             ForEach(0..<youTubeManager.videoIDs.count, id: \.self) { index in
-                                ReelsVideoPlayer(videoID: youTubeManager.videoIDs[index], timeTrackingManager: timeTrackingManager)
+                                ReelsVideoPlayer(videoID: youTubeManager.videoIDs[index], timeTrackingManager: timeTrackingManager, shouldPause: $shouldPauseVideos)
                                     .tag(index)
                             }
                         }
@@ -76,6 +78,10 @@ struct ReelsContainerView: View {
                         .ignoresSafeArea()
                         .onChange(of: currentIndex) { _, newIndex in
                             print("Switched to Short index: \(newIndex)")
+                            
+                            // Pause all other videos when switching
+                            pauseAllVideosExcept(current: newIndex)
+                            
                             // Ensure tracking continues when switching videos
                             if !timeTrackingManager.isCurrentlyTracking {
                                 timeTrackingManager.startTracking()
@@ -169,6 +175,8 @@ struct ReelsContainerView: View {
         .onDisappear {
             timeTrackingManager.stopTracking()
             blackScreenTimer?.invalidate()
+            // Pause all videos when leaving the view
+            pauseAllVideos()
         }
         .refreshable {
             loadDifferentShorts()
@@ -234,6 +242,9 @@ struct ReelsContainerView: View {
     private func startBlackScreenTimer() {
         print("🖤 Starting black screen timer")
         
+        // Pause all videos immediately
+        shouldPauseVideos = true
+        
         // Show black screen
         withAnimation(.easeInOut(duration: 0.3)) {
             showBlackScreen = true
@@ -253,11 +264,25 @@ struct ReelsContainerView: View {
                 timer.invalidate()
                 self.blackScreenTimer = nil
                 
+                // Resume videos
+                self.shouldPauseVideos = false
+                
                 withAnimation(.easeInOut(duration: 0.3)) {
                     self.showBlackScreen = false
                 }
             }
         }
+    }
+    
+    private func pauseAllVideosExcept(current: Int) {
+        // This function will be called when switching videos
+        // The individual ReelsVideoPlayer's onDisappear will handle pausing
+        print("🎬 Pausing all videos except index: \(current)")
+    }
+    
+    private func pauseAllVideos() {
+        // This function will be called when leaving the videos tab
+        print("🎬 Pausing all videos - leaving videos tab")
     }
 }
 

@@ -33,6 +33,7 @@ struct ContentView: View {
             // Pause timer when switching away from videos tab
             if newTab != 0 {
                 timeTrackingManager.pauseTracking()
+                // Note: Video pausing is handled by ReelsContainerView's onDisappear
             } else {
                 // Resume timer when switching back to videos tab
                 timeTrackingManager.resumeTracking()

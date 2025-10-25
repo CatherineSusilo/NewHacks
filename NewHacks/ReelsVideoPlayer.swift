@@ -10,6 +10,7 @@ import AVKit
 struct ReelsVideoPlayer: View {
     let videoID: String
     let timeTrackingManager: TimeTrackingManager
+    @Binding var shouldPause: Bool
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var isMuted = false
@@ -17,6 +18,7 @@ struct ReelsVideoPlayer: View {
     @State private var likeCount = Int.random(in: 100...5000)
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var webView: WKWebView?
     
     var body: some View {
         GeometryReader { geometry in
@@ -51,7 +53,7 @@ struct ReelsVideoPlayer: View {
                     }
                 } else {
                     // Direct YouTube Shorts URL with audio always on
-                    YouTubeShortsView(videoID: videoID, isLoading: $isLoading, errorMessage: $errorMessage)
+                    YouTubeShortsView(videoID: videoID, isLoading: $isLoading, errorMessage: $errorMessage, webView: $webView)
                         .frame(width: geometry.size.width, height: geometry.size.height)
                         .clipped()
                     
@@ -93,6 +95,91 @@ struct ReelsVideoPlayer: View {
                 }
             }
         }
+        .onAppear {
+            // Resume video when view appears
+            resumeVideo()
+        }
+        .onDisappear {
+            // Pause video when view disappears
+            pauseVideo()
+        }
+        .onChange(of: shouldPause) { _, newValue in
+            if newValue {
+                // Pause video when black screen appears
+                pauseVideo()
+            } else {
+                // Resume video when black screen disappears
+                resumeVideo()
+            }
+        }
+    }
+    
+    private func pauseVideo() {
+        guard let webView = webView else { return }
+        
+        let pauseScript = """
+        // Pause all videos
+        var videos = document.querySelectorAll('video');
+        for (var i = 0; i < videos.length; i++) {
+            videos[i].pause();
+            videos[i].muted = true; // Also mute to ensure no audio
+        }
+        
+        // Try multiple YouTube player pause methods
+        var player = document.querySelector('#movie_player');
+        if (player) {
+            if (player.pauseVideo) {
+                player.pauseVideo();
+            }
+            if (player.pause) {
+                player.pause();
+            }
+        }
+        
+        // Try pausing using YouTube's global player
+        if (window.ytplayer && window.ytplayer.pauseVideo) {
+            window.ytplayer.pauseVideo();
+        }
+        
+        // Try pausing using YouTube's player API
+        if (window.YT && window.YT.Player) {
+            var players = document.querySelectorAll('.ytp-video');
+            for (var i = 0; i < players.length; i++) {
+                if (players[i].pauseVideo) {
+                    players[i].pauseVideo();
+                }
+            }
+        }
+        """
+        
+        webView.evaluateJavaScript(pauseScript, completionHandler: nil)
+    }
+    
+    private func resumeVideo() {
+        guard let webView = webView else { return }
+        
+        let resumeScript = """
+        // Resume video playback
+        setTimeout(function() {
+            var videos = document.querySelectorAll('video');
+            for (var i = 0; i < videos.length; i++) {
+                videos[i].muted = false; // Unmute
+                if (videos[i].paused) {
+                    videos[i].play().catch(function(e) {
+                        console.log('Resume play failed:', e);
+                    });
+                }
+            }
+            
+            // Try resuming using YouTube player controls
+            var playButton = document.querySelector('.ytp-play-button');
+            if (playButton && playButton.getAttribute('data-title-no-tooltip') === 'Play') {
+                playButton.click();
+            }
+        }, 100);
+        """
+        
+        webView.evaluateJavaScript(resumeScript, completionHandler: nil)
     }
     
     private func formatCount(_ count: Int) -> String {
@@ -111,6 +198,7 @@ struct YouTubeShortsView: UIViewRepresentable {
     let videoID: String
     @Binding var isLoading: Bool
     @Binding var errorMessage: String?
+    @Binding var webView: WKWebView?
     
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -124,6 +212,9 @@ struct YouTubeShortsView: UIViewRepresentable {
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.bounces = false
         webView.navigationDelegate = context.coordinator
+        
+        // Store reference to webView
+        self.webView = webView
         
         loadYouTubeShorts(in: webView)
         
@@ -208,5 +299,5 @@ struct YouTubeShortsView: UIViewRepresentable {
 }
 
 #Preview {
-    ReelsVideoPlayer(videoID: "NdjT8oatAYA", timeTrackingManager: TimeTrackingManager())
+    ReelsVideoPlayer(videoID: "NdjT8oatAYA", timeTrackingManager: TimeTrackingManager(), shouldPause: .constant(false))
 }
