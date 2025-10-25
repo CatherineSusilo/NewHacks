@@ -1,5 +1,9 @@
 # TODO
 
+### Hassan
+* Playing multiple videos
+* Scrolling
+
 ### Shuhan
 * Smart lag
     - how long have we watched reels for. (how long the app has been open)
