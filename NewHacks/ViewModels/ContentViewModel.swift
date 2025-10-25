@@ -6,30 +6,30 @@ class ContentViewModel: ObservableObject {
     @Published var currentReelIndex = 0
     @Published var user: User
     @Published var settings: AppSettings
-    @Published var timeTracker: TimeTracker
-    @Published var lagManager: LagManager
-    @Published var streakManager: StreakViewModel
-    @Published var mascotManager: MascotManager
+    
+    // Initialize dependencies directly instead of referencing self
+    var timeTracker: TimeTracker
+    var lagManager: LagManager
+    var streakManager: StreakViewModel
+    var mascotManager: MascotManager
     
     private var cancellables = Set<AnyCancellable>()
     
     init() {
+        // Initialize properties first
         self.user = User(
             selectedCategories: [],
             dailyTimeLimit: User.defaultTimeLimit,
             currentStreak: 0,
             totalTimeSaved: 0
         )
-        self.settings = AppSettings(
-            isLagEnabled: true,
-            mascotEnabled: true,
-            smartWarnings: true
-        )
+        self.settings = AppSettings.default
         self.timeTracker = TimeTracker()
         self.lagManager = LagManager()
         self.streakManager = StreakViewModel()
         self.mascotManager = MascotManager()
         
+        // Now setup bindings
         setupBindings()
         loadUserData()
     }
