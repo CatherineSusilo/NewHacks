@@ -85,6 +85,7 @@ struct ReelsVideoPlayer: View {
                     .animation(.easeInOut(duration: 0.3), value: showMuteAnimation)
                 }
                 
+                
                 // Right Side Action Buttons
                 VStack {
                     Spacer()
@@ -166,6 +167,7 @@ struct ReelsVideoPlayer: View {
             }
         }
     }
+    
 }
 
 #Preview {

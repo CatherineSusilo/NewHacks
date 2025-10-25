@@ -12,6 +12,9 @@ struct ReelsContainerView: View {
     @State private var dragOffset: CGFloat = 0
     @State private var videos: [URL] = []
     @ObservedObject var timeTrackingManager: TimeTrackingManager
+    @State private var showBlackScreen = false
+    @State private var blackScreenTimer: Timer?
+    @State private var blackScreenCountdown = 3
 
     var body: some View {
         GeometryReader { geometry in
@@ -34,6 +37,38 @@ struct ReelsContainerView: View {
                             if !timeTrackingManager.isCurrentlyTracking {
                                 timeTrackingManager.startTracking()
                             }
+                            
+                            // Check for black screen on video switch
+                            checkTimeAndShowBlackScreen()
+                        }
+                        
+                        // Black Screen Overlay
+                        if showBlackScreen {
+                            Color.black
+                                .ignoresSafeArea()
+                                .overlay(
+                                    VStack {
+                                        Spacer()
+                                        Text("Take a break!")
+                                            .font(.title)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                            .padding()
+                                        
+                                        Text("\(blackScreenCountdown)")
+                                            .font(.system(size: 60, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.white)
+                                            .padding()
+                                        
+                                        Text("seconds remaining")
+                                            .font(.headline)
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .padding(.bottom, 50)
+                                        
+                                        Spacer()
+                                    }
+                                )
+                                .allowsHitTesting(false) // Prevent interaction during black screen
                         }
                         
                         // Time tracking display in upper right corner
@@ -72,9 +107,11 @@ struct ReelsContainerView: View {
         .onAppear {
             loadVideos()
             timeTrackingManager.startTracking()
+            checkTimeAndShowBlackScreen()
         }
         .onDisappear {
             timeTrackingManager.stopTracking()
+            blackScreenTimer?.invalidate()
         }
     }
 
@@ -110,6 +147,46 @@ struct ReelsContainerView: View {
         print("📱 Total loaded videos: \(loadedVideos.count)")
         for (index, url) in loadedVideos.enumerated() {
             print("Video \(index): \(url.lastPathComponent)")
+        }
+    }
+    
+    private func checkTimeAndShowBlackScreen() {
+        // Check if total watch time exceeds 20 seconds
+        print("🔍 Checking time: \(timeTrackingManager.currentDayWatchTime) seconds")
+        if timeTrackingManager.currentDayWatchTime > 20 {
+            print("⏰ Time exceeded 20 seconds, starting black screen")
+            startBlackScreenTimer()
+        } else {
+            print("✅ Time is under 20 seconds, no black screen needed")
+        }
+    }
+    
+    private func startBlackScreenTimer() {
+        print("🖤 Starting black screen timer")
+        
+        // Show black screen
+        withAnimation(.easeInOut(duration: 0.3)) {
+            showBlackScreen = true
+        }
+        
+        // Reset countdown
+        blackScreenCountdown = 3
+        
+        // Start timer
+        blackScreenTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+            print("⏱️ Black screen countdown: \(self.blackScreenCountdown)")
+            self.blackScreenCountdown -= 1
+            
+            if self.blackScreenCountdown <= 0 {
+                print("✅ Black screen timer finished, resuming video")
+                // Timer finished, hide black screen
+                timer.invalidate()
+                self.blackScreenTimer = nil
+                
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    self.showBlackScreen = false
+                }
+            }
         }
     }
 }
