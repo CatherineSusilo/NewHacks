@@ -11,6 +11,7 @@ struct ReelsContainerView: View {
     @State private var currentIndex = 0
     @State private var dragOffset: CGFloat = 0
     @State private var videos: [URL] = []
+    @StateObject private var timeTrackingManager = TimeTrackingManager()
 
     var body: some View {
         GeometryReader { geometry in
@@ -21,7 +22,7 @@ struct ReelsContainerView: View {
                     ZStack {
                         TabView(selection: $currentIndex) {
                             ForEach(0..<videos.count, id: \.self) { index in
-                                ReelsVideoPlayer(videoURL: videos[index])
+                                ReelsVideoPlayer(videoURL: videos[index], timeTrackingManager: timeTrackingManager)
                                     .tag(index)
                             }
                         }
@@ -29,17 +30,23 @@ struct ReelsContainerView: View {
                         .ignoresSafeArea()
                         .onChange(of: currentIndex) { newIndex in
                             print("Switched to video index: \(newIndex)")
+                            // Ensure tracking continues when switching videos
+                            if !timeTrackingManager.isCurrentlyTracking {
+                                timeTrackingManager.startTracking()
+                            }
                         }
                         
-                        // Debug indicator
+                        // Time tracking display in upper right corner
                         VStack {
                             HStack {
-                                Text("Video \(currentIndex + 1) of \(videos.count)")
+                                Spacer()
+                                Text(timeTrackingManager.formattedCurrentTime)
                                     .foregroundColor(.white)
-                                    .padding(8)
+                                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
                                     .background(Color.black.opacity(0.6))
                                     .cornerRadius(8)
-                                Spacer()
                             }
                             Spacer()
                         }
@@ -64,6 +71,10 @@ struct ReelsContainerView: View {
         }
         .onAppear {
             loadVideos()
+            timeTrackingManager.startTracking()
+        }
+        .onDisappear {
+            timeTrackingManager.stopTracking()
         }
     }
 

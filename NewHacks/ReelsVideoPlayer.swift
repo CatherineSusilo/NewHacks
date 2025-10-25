@@ -11,6 +11,7 @@ import AVFoundation
 
 struct ReelsVideoPlayer: View {
     let videoURL: URL
+    let timeTrackingManager: TimeTrackingManager
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var isMuted = false
@@ -168,5 +169,5 @@ struct ReelsVideoPlayer: View {
 }
 
 #Preview {
-    ReelsVideoPlayer(videoURL: URL(fileURLWithPath: "sample_video.mp4"))
+    ReelsVideoPlayer(videoURL: URL(fileURLWithPath: "sample_video.mp4"), timeTrackingManager: TimeTrackingManager())
 }
