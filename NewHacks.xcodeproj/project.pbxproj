@@ -29,9 +29,22 @@
 		9F23390A2EAD49AD00150563 /* NewHacksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NewHacksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CF8C7CE62EAD66370054ABAD /* Exceptions for "NewHacks" folder in "NewHacks" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9F2338EF2EAD49AB00150563 /* NewHacks */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9F2338F22EAD49AB00150563 /* NewHacks */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CF8C7CE62EAD66370054ABAD /* Exceptions for "NewHacks" folder in "NewHacks" target */,
+			);
 			path = NewHacks;
 			sourceTree = "<group>";
 		};
@@ -175,6 +188,7 @@
 				TargetAttributes = {
 					9F2338EF2EAD49AB00150563 = {
 						CreatedOnToolsVersion = 16.0;
+						LastSwiftMigration = 1620;
 					};
 					9F2338FF2EAD49AD00150563 = {
 						CreatedOnToolsVersion = 16.0;
@@ -195,6 +209,9 @@
 			);
 			mainGroup = 9F2338E72EAD49AB00150563;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CF8C7CE42EAD61480054ABAD /* XCLocalSwiftPackageReference "../youtube-ios-player-helper" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9F2338F12EAD49AB00150563 /* Products */;
 			projectDirPath = "";
@@ -393,11 +410,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NewHacks/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NewHacks/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -411,8 +430,11 @@
 				PRODUCT_BUNDLE_IDENTIFIER = hassan.NewHacks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "NewHacks/NewHacks-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				unnamed = "";
 			};
 			name = Debug;
 		};
@@ -421,11 +443,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NewHacks/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NewHacks/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -439,8 +463,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = hassan.NewHacks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "NewHacks/NewHacks-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				unnamed = "";
 			};
 			name = Release;
 		};
@@ -552,6 +578,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		CF8C7CE42EAD61480054ABAD /* XCLocalSwiftPackageReference "../youtube-ios-player-helper" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../youtube-ios-player-helper";
+		};
+/* End XCLocalSwiftPackageReference section */
 	};
 	rootObject = 9F2338E82EAD49AB00150563 /* Project object */;
 }

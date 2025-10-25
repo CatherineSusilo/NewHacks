@@ -2,86 +2,65 @@
 //  ReelsVideoPlayer.swift
 //  NewHacks
 //
-//  Created by Hassan Ibrahim on 2025-10-25.
-//
 
 import SwiftUI
-import AVKit
-import AVFoundation
+import WebKit
 
 struct ReelsVideoPlayer: View {
-    let videoURL: URL
-    @State private var player: AVPlayer?
-    @State private var isPlaying = false
-    @State private var isMuted = false
+    let videoID: String
     @State private var isLiked = false
-    @State private var likeCount = 0
-    @State private var showMuteAnimation = false
-    @State private var isPressed = false
+    @State private var likeCount = Int.random(in: 100...5000)
+    @State private var isLoading = true
+    @State private var errorMessage: String?
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Video Player
-                if let player = player {
-                    VideoPlayer(player: player)
-                        .aspectRatio(9/16, contentMode: .fit)
+                Color.black
+                
+                if let error = errorMessage {
+                    // Error state
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 40))
+                            .foregroundColor(.red)
+                        
+                        Text("Video Not Available")
+                            .foregroundColor(.white)
+                            .font(.headline)
+                        
+                        Text(error)
+                            .foregroundColor(.white.opacity(0.8))
+                            .font(.caption)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        
+                        Button("Try Again") {
+                            isLoading = true
+                            errorMessage = nil
+                        }
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    }
+                } else {
+                    // Direct YouTube Shorts URL with audio always on
+                    YouTubeShortsView(videoID: videoID, isLoading: $isLoading, errorMessage: $errorMessage)
                         .frame(width: geometry.size.width, height: geometry.size.height)
                         .clipped()
-                        .onAppear {
-                            setupPlayer()
+                    
+                    if isLoading {
+                        VStack {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(1.2)
+                            Text("Loading Short...")
+                                .foregroundColor(.white)
+                                .font(.caption)
+                                .padding(.top, 8)
                         }
-                }
-                
-                // Gesture Overlay for Press and Tap
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onLongPressGesture(minimumDuration: 0) { pressing in
-                        isPressed = pressing
-                        if pressing {
-                            // Pause when pressed
-                            player?.pause()
-                            isPlaying = false
-                        } else {
-                            // Resume when released
-                            player?.play()
-                            isPlaying = true
-                        }
-                    } perform: {
-                        // This closure is called when the long press gesture completes
                     }
-                    .onTapGesture {
-                        // Toggle mute/unmute on tap
-                        toggleMute()
-                    }
-                
-                // Mute/Unmute Animation Overlay
-                if showMuteAnimation {
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            VStack {
-                                Image(systemName: isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.white)
-                                    .background(
-                                        Circle()
-                                            .fill(Color.black.opacity(0.6))
-                                            .frame(width: 80, height: 80)
-                                    )
-                                
-                                Text(isMuted ? "Muted" : "Unmuted")
-                                    .font(.caption)
-                                    .foregroundColor(.white)
-                                    .padding(.top, 4)
-                            }
-                            Spacer()
-                        }
-                        Spacer()
-                    }
-                    .transition(.scale.combined(with: .opacity))
-                    .animation(.easeInOut(duration: 0.3), value: showMuteAnimation)
                 }
                 
                 // Right Side Action Buttons
@@ -90,7 +69,6 @@ struct ReelsVideoPlayer: View {
                     HStack {
                         Spacer()
                         VStack(spacing: 20) {
-                            // Like Button
                             Button(action: {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                                     isLiked.toggle()
@@ -101,17 +79,6 @@ struct ReelsVideoPlayer: View {
                                     }
                                 }
                             }) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: isLiked ? "heart.fill" : "heart")
-                                        .font(.title2)
-                                        .foregroundColor(isLiked ? .red : .white)
-                                        .scaleEffect(isLiked ? 1.3 : 1.0)
-                                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isLiked)
-                                    
-                                    Text("\(likeCount)")
-                                        .font(.caption)
-                                        .foregroundColor(.white)
-                                }
                             }
                         }
                         .padding(.trailing, 20)
@@ -120,53 +87,119 @@ struct ReelsVideoPlayer: View {
                 }
             }
         }
-        .onAppear {
-            setupPlayer()
-        }
-        .onDisappear {
-            player?.pause()
-        }
     }
     
-    private func setupPlayer() {
-        player = AVPlayer(url: videoURL)
-        
-        // Set up notification for when video ends
-        NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemDidPlayToEndTime,
-            object: player?.currentItem,
-            queue: .main
-        ) { _ in
-            // Loop the video
-            self.player?.seek(to: .zero)
-            self.player?.play()
+    private func formatCount(_ count: Int) -> String {
+        if count >= 1000000 {
+            return String(format: "%.1fM", Double(count) / 1000000.0)
+        } else if count >= 1000 {
+            return String(format: "%.1fK", Double(count) / 1000.0)
+        } else {
+            return "\(count)"
         }
+    }
+}
+
+// Direct YouTube Shorts URL with audio always on
+struct YouTubeShortsView: UIViewRepresentable {
+    let videoID: String
+    @Binding var isLoading: Bool
+    @Binding var errorMessage: String?
+    
+    func makeUIView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        config.allowsInlineMediaPlayback = true
+        config.mediaTypesRequiringUserActionForPlayback = []
+        config.preferences.javaScriptEnabled = true
         
-        // Auto-play
-        player?.play()
-        isPlaying = true
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.backgroundColor = .black
+        webView.isOpaque = false
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        webView.navigationDelegate = context.coordinator
+        
+        loadYouTubeShorts(in: webView)
+        
+        return webView
     }
     
-    private func toggleMute() {
-        guard let player = player else { return }
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        // No updates needed - audio is always on
+    }
+    
+    private func loadYouTubeShorts(in webView: WKWebView) {
+        // Use Direct YouTube Shorts URL
+        let shortsURL = "https://www.youtube.com/shorts/\(videoID)"
         
-        isMuted.toggle()
-        player.isMuted = isMuted
-        
-        // Show animation
-        withAnimation {
-            showMuteAnimation = true
+        guard let url = URL(string: shortsURL) else {
+            errorMessage = "Invalid video URL"
+            isLoading = false
+            return
         }
         
-        // Hide animation after 1.5 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            withAnimation {
-                showMuteAnimation = false
-            }
+        print("🔗 Loading YouTube Short: \(shortsURL)")
+        let request = URLRequest(url: url)
+        webView.load(request)
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, WKNavigationDelegate {
+        let parent: YouTubeShortsView
+        
+        init(_ parent: YouTubeShortsView) {
+            self.parent = parent
+        }
+        
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            parent.isLoading = true
+        }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            parent.isLoading = false
+            
+            // Ensure audio is always on and video plays automatically
+            let audioScript = """
+            // Ensure audio is unmuted and video plays
+            setTimeout(function() {
+                var video = document.querySelector('video');
+                if (video) {
+                    // Unmute the video
+                    video.muted = false;
+                    // Play the video if paused
+                    if (video.paused) {
+                        video.play().catch(function(e) {
+                            console.log('Auto-play failed:', e);
+                        });
+                    }
+                }
+                
+                // Try clicking play button if video doesn't play
+                var playButton = document.querySelector('.ytp-play-button');
+                if (playButton && playButton.getAttribute('data-title-no-tooltip') === 'Play') {
+                    playButton.click();
+                }
+            }, 1000);
+            """
+            
+            webView.evaluateJavaScript(audioScript, completionHandler: nil)
+        }
+        
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            parent.isLoading = false
+            parent.errorMessage = "Failed to load: \(error.localizedDescription)"
+        }
+        
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            parent.isLoading = false
+            parent.errorMessage = "Network error: \(error.localizedDescription)"
         }
     }
 }
 
 #Preview {
-    ReelsVideoPlayer(videoURL: URL(fileURLWithPath: "sample_video.mp4"))
+    ReelsVideoPlayer(videoID: "NdjT8oatAYA")
 }
