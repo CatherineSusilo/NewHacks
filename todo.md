@@ -1,8 +1,8 @@
 # TODO
 
 ### Hassan
-* Playing multiple videos
-* Scrolling
+** Playing multiple videos
+** Scrolling
 
 ### Shuhan
 * Smart lag

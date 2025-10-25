@@ -11,21 +11,40 @@ struct ReelsContainerView: View {
     @State private var currentIndex = 0
     @State private var dragOffset: CGFloat = 0
     @State private var videos: [URL] = []
-    
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 Color.black.ignoresSafeArea()
-                
+
                 if !videos.isEmpty {
-                    TabView(selection: $currentIndex) {
-                        ForEach(0..<videos.count, id: \.self) { index in
-                            ReelsVideoPlayer(videoURL: videos[index])
-                                .tag(index)
+                    ZStack {
+                        TabView(selection: $currentIndex) {
+                            ForEach(0..<videos.count, id: \.self) { index in
+                                ReelsVideoPlayer(videoURL: videos[index])
+                                    .tag(index)
+                            }
                         }
+                        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                        .ignoresSafeArea()
+                        .onChange(of: currentIndex) { newIndex in
+                            print("Switched to video index: \(newIndex)")
+                        }
+                        
+                        // Debug indicator
+                        VStack {
+                            HStack {
+                                Text("Video \(currentIndex + 1) of \(videos.count)")
+                                    .foregroundColor(.white)
+                                    .padding(8)
+                                    .background(Color.black.opacity(0.6))
+                                    .cornerRadius(8)
+                                Spacer()
+                            }
+                            Spacer()
+                        }
+                        .padding()
                     }
-                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                    .ignoresSafeArea()
                 } else {
                     // Loading or empty state
                     VStack {
@@ -35,6 +54,10 @@ struct ReelsContainerView: View {
                         Text("Loading videos...")
                             .foregroundColor(.white)
                             .padding(.top)
+                        Text("Found \(videos.count) videos")
+                            .foregroundColor(.white)
+                            .font(.caption)
+                            .padding(.top, 4)
                     }
                 }
             }
@@ -43,12 +66,39 @@ struct ReelsContainerView: View {
             loadVideos()
         }
     }
-    
+
     private func loadVideos() {
-        // For now, we'll just use the one video file
-        // In a real app, you'd load multiple videos
-        if let videoURL = Bundle.main.url(forResource: "IMG_2537", withExtension: "MOV") {
-            videos = [videoURL, videoURL, videoURL] // Duplicate for demo purposes
+        // Load all videos from the main bundle
+        let videoFiles = ["IMG_2537.MOV", "IMG_2540.MOV", "IMG_2541.MOV", "IMG_2542.MOV", "IMG_2543.MOV"]
+        var loadedVideos: [URL] = []
+        
+        for videoFile in videoFiles {
+            let fileName = videoFile.replacingOccurrences(of: ".MOV", with: "")
+            
+            // Try to load from main bundle
+            if let videoURL = Bundle.main.url(forResource: fileName, withExtension: "MOV") {
+                loadedVideos.append(videoURL)
+                print("✅ Loaded: \(fileName)")
+            } else {
+                print("❌ Could not find: \(fileName)")
+            }
+        }
+        
+        // If we have at least one video, duplicate it to create multiple videos for testing
+        if !loadedVideos.isEmpty && loadedVideos.count < 5 {
+            let firstVideo = loadedVideos.first!
+            while loadedVideos.count < 5 {
+                loadedVideos.append(firstVideo)
+            }
+            print("🔄 Duplicated first video to create \(loadedVideos.count) total videos")
+        }
+        
+        videos = loadedVideos
+        
+        // Debug: Print loaded videos
+        print("📱 Total loaded videos: \(loadedVideos.count)")
+        for (index, url) in loadedVideos.enumerated() {
+            print("Video \(index): \(url.lastPathComponent)")
         }
     }
 }
