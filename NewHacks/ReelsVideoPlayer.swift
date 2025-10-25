@@ -5,9 +5,14 @@
 
 import SwiftUI
 import WebKit
+import AVKit
 
 struct ReelsVideoPlayer: View {
     let videoID: String
+    let timeTrackingManager: TimeTrackingManager
+    @State private var player: AVPlayer?
+    @State private var isPlaying = false
+    @State private var isMuted = false
     @State private var isLiked = false
     @State private var likeCount = Int.random(in: 100...5000)
     @State private var isLoading = true
@@ -62,6 +67,7 @@ struct ReelsVideoPlayer: View {
                         }
                     }
                 }
+                
                 
                 // Right Side Action Buttons
                 VStack {
@@ -198,8 +204,9 @@ struct YouTubeShortsView: UIViewRepresentable {
             parent.errorMessage = "Network error: \(error.localizedDescription)"
         }
     }
+    
 }
 
 #Preview {
-    ReelsVideoPlayer(videoID: "NdjT8oatAYA")
+    ReelsVideoPlayer(videoID: "NdjT8oatAYA", timeTrackingManager: TimeTrackingManager())
 }

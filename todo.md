@@ -1,8 +1,15 @@
 # TODO
 
 ### Hassan
-** Playing multiple videos
-** Scrolling
+- time history
+- create a navigation bar
+
+~~Playing multiple videos~~
+~~Scrolling~~
+~~time tracking~~
+~~figure out how long somebody has been watching reels for~~
+~~display that time in the upper right corner.~~
+~~remove the video n of n counter in the top left~~
 
 ### Shuhan
 * Smart lag

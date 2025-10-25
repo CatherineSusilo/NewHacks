@@ -8,8 +8,36 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var timeTrackingManager = TimeTrackingManager()
+    @State private var selectedTab = 0
+    
     var body: some View {
-        ReelsContainerView()
+        TabView(selection: $selectedTab) {
+            // Videos Tab
+            ReelsContainerView(timeTrackingManager: timeTrackingManager)
+                .tabItem {
+                    Image(systemName: "play.rectangle.fill")
+                    Text("Videos")
+                }
+                .tag(0)
+            
+            // Profile Tab
+            ProfileView(timeTrackingManager: timeTrackingManager)
+                .tabItem {
+                    Image(systemName: "person.circle.fill")
+                    Text("Profile")
+                }
+                .tag(1)
+        }
+        .onChange(of: selectedTab) { newTab in
+            // Pause timer when switching away from videos tab
+            if newTab != 0 {
+                timeTrackingManager.pauseTracking()
+            } else {
+                // Resume timer when switching back to videos tab
+                timeTrackingManager.resumeTracking()
+            }
+        }
     }
 }
 
