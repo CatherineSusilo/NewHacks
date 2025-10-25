@@ -1,8 +1,6 @@
-# TODO
-
 ### Hassan
-- time history
-- create a navigation bar
+~~time history~~
+~~create a navigation bar~~
 
 ~~Playing multiple videos~~
 ~~Scrolling~~
