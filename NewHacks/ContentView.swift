@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var userDataManager: UserDataManager
     @StateObject private var timeTrackingManager = TimeTrackingManager()
     @State private var selectedTab = 0
     
@@ -16,7 +15,6 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             // Videos Tab
             ReelsContainerView(timeTrackingManager: timeTrackingManager)
-                .environmentObject(userDataManager)
                 .tabItem {
                     Image(systemName: "play.rectangle.fill")
                     Text("Videos")
@@ -25,7 +23,6 @@ struct ContentView: View {
             
             // Profile Tab
             ProfileView(timeTrackingManager: timeTrackingManager)
-                .environmentObject(userDataManager)
                 .tabItem {
                     Image(systemName: "person.circle.fill")
                     Text("Profile")
