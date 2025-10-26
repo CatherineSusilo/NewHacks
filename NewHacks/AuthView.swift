@@ -22,22 +22,14 @@ struct AuthView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 28) {
                     ZStack {
-                        Circle()
-                            .fill(LinearGradient(
-                                gradient: Gradient(colors: [.blue, .purple]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ))
-                            .frame(width: 100, height: 100)
-                            .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
-                        
-                        Image("long_logo")
-                            .font(.system(size: 40, weight: .bold))
-                            .foregroundColor(.white)
+                        Image("long_Logo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 80)
                     }
-                    .padding(.top, 20)
+                    .padding(.top, 40)
                     // Header
                     VStack(spacing: 8) {
                         Text(isLoginMode ? "Welcome Back" : "Create Account")
@@ -92,7 +84,7 @@ struct AuthView: View {
                                 
                                 Text("Selected: \(formatTimeThreshold(fixedTimeThreshold))")
                                     .font(.caption)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(Color(red: 0.89, green: 0.26, blue: 0.20))
                             }
                             .padding()
                             .background(Color(.systemGray6))
@@ -120,7 +112,7 @@ struct AuthView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
+                        .background(Color(red: 0.89, green: 0.26, blue: 0.20))
                         .cornerRadius(12)
                     }
                     .padding(.horizontal)
@@ -138,7 +130,7 @@ struct AuthView: View {
                             Text(isLoginMode ? "Sign Up" : "Sign In")
                                 .fontWeight(.semibold)
                         }
-                        .foregroundColor(.blue)
+                        .foregroundColor(Color(red: 0.75, green: 0.15, blue: 0.10))
                     }
                     
                     Spacer()
