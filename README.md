@@ -43,7 +43,7 @@ Reel Cage fights fire with fire. We use the same addictive mechanics against the
 - Auth Screen - Login/Signup with vermillion-themed design
 - Categories Selection - Personalized content preferences
 - Shorts Viewer - Infinite scroll with smart breaks
-- Profile & Analytics - AI insights and time tracking data
+- Profile & Analytics - Insights and time tracking data
 
 ### Architecture
 ```swift
