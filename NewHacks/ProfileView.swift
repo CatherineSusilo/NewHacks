@@ -9,14 +9,71 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var timeTrackingManager: TimeTrackingManager
+    @EnvironmentObject var userDataManager: UserDataManager
     @State private var fakeTimeHistory: [DailyTimeEntry] = []
     @State private var showingCalendar = false
+    @State private var showingLogoutAlert = false
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Header
+                    // User Profile Header
+                    if let user = userDataManager.currentUser {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(user.name)
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    
+                                    Text(user.email)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("Age: \(user.age)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                // Logout Button
+                                Button(action: {
+                                    showingLogoutAlert = true
+                                }) {
+                                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                                        .foregroundColor(.red)
+                                        .padding(8)
+                                        .background(Color.red.opacity(0.1))
+                                        .cornerRadius(8)
+                                }
+                            }
+                            
+                            // User Preferences
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Preferences")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                Text("Break Threshold: \(formatTimeThreshold(user.fixedTimeThreshold))")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                
+                                if !user.preferredCategories.isEmpty {
+                                    Text("Categories: \(user.preferredCategories.joined(separator: ", "))")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(2)
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top)
+                    }
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Time History")
                             .font(.largeTitle)
@@ -112,6 +169,14 @@ struct ProfileView: View {
                 }
             }
             .navigationBarHidden(true)
+            .alert("Log Out", isPresented: $showingLogoutAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Log Out", role: .destructive) {
+                    userDataManager.logout()
+                }
+            } message: {
+                Text("Are you sure you want to log out?")
+            }
         }
         .sheet(isPresented: $showingCalendar) {
             MonthlyCalendarView(timeTrackingManager: timeTrackingManager)
@@ -120,6 +185,15 @@ struct ProfileView: View {
             generateFakeData()
         }
     }
+    private func formatTimeThreshold(_ seconds: TimeInterval) -> String {
+            let minutes = Int(seconds) / 60
+            if minutes < 90 {
+                return "\(minutes) minutes"
+            } else {
+                let hours = minutes / 60
+                return "\(hours) hour\(hours > 1 ? "s" : "")"
+            }
+        }
     
     private func generateFakeData() {
         let calendar = Calendar.current
