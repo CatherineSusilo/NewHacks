@@ -14,12 +14,13 @@ struct ReelsContainerView: View {
     @ObservedObject var timeTrackingManager: TimeTrackingManager
     @State private var showBlackScreen = false
     @State private var blackScreenTimer: Timer?
-    @State private var breakTextOffset: CGFloat = 0
-    @State private var breakTextOpacity: Double = 1.0
     @State private var videoPlayers: [Int: ReelsVideoPlayer] = [:]
     @State private var shouldPauseVideos = false
     @State private var blackScreenCountdown = 0
     @State private var sessionStartTime: Date?
+    @State private var blackScreenCount = 0
+    @State private var showPercentageScreen = false
+    @State private var dailyLimitPercentage = 0.0
     
     private var fixedTimeThreshold: TimeInterval {
         userDataManager.currentUser?.fixedTimeThreshold ?? 600 // Default fallback
@@ -104,7 +105,7 @@ struct ReelsContainerView: View {
                             checkTimeAndShowBlackScreen()
                         }
                         
-                        // Black Screen Overlay
+                        // Black Screen Overlay with Dynamic Text
                         if showBlackScreen {
                             Color.black
                                 .ignoresSafeArea()
@@ -112,20 +113,36 @@ struct ReelsContainerView: View {
                                     VStack {
                                         Spacer()
                                         
-                                        Text("Take a break!")
-                                            .font(.title)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.white)
-                                            .multilineTextAlignment(.center)
-                                            .opacity(breakTextOpacity)
-                                            .offset(y: breakTextOffset)
-                                            .onAppear {
-                                                // Start the animation when black screen appears
-                                                withAnimation(.easeInOut(duration: 2.0)) {
-                                                    breakTextOffset = 200 // Move downwards
-                                                    breakTextOpacity = 0.3 // Fade near bottom
-                                                }
-                                            }
+                                        if showPercentageScreen {
+                                            // Percentage screen
+                                            Text("Daily Limit Update")
+                                                .font(.title)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.white)
+                                                .multilineTextAlignment(.center)
+                                                .padding()
+                                            
+                                            Text("You have reached")
+                                                .font(.headline)
+                                                .foregroundColor(.white.opacity(0.8))
+                                            
+                                            Text("\(Int(dailyLimitPercentage))%")
+                                                .font(.system(size: 80, weight: .bold, design: .monospaced))
+                                                .foregroundColor(.yellow)
+                                                .padding()
+                                            
+                                            Text("of your daily limit")
+                                                .font(.headline)
+                                                .foregroundColor(.white.opacity(0.8))
+                                        } else {
+                                            // Regular break screen
+                                            Text("Take a break")
+                                                .font(.title)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.white)
+                                                .multilineTextAlignment(.center)
+                                                .padding()
+                                        }
                                         
                                         Spacer()
                                     }
@@ -216,29 +233,42 @@ struct ReelsContainerView: View {
         return 0
     }
     
-    private func calculateRandomizedCountdown() -> Int {
-        let sessionDuration = getSessionDuration()
-        let ratio = sessionDuration / fixedTimeThreshold
+    private func calculateRandomizedCountdown() -> (seconds: Int, showPercentage: Bool) {
+        // Check if this is the 5th black screen (show percentage)
+        let shouldShowPercentage = (blackScreenCount + 1) % 5 == 0
         
-        print("📊 Ratio calculation: \(sessionDuration)s / \(fixedTimeThreshold)s = \(ratio)")
-        
-        let countdownRange: ClosedRange<Double>
-        
-        if ratio <= 0.6 {
-            // 0.6 of fixed number -> 0.8 to 1.0 seconds
-            countdownRange = 0.8...1
-        } else if ratio <= 0.8 {
-            // 0.8 of fixed number -> 1 to 3 seconds
-            countdownRange = 1.0...3.0
-        } else {
-            // Fixed number reached -> 3 to 10 seconds
-            countdownRange = 3.0...10.0
+        if shouldShowPercentage {
+            // Calculate percentage of daily limit reached
+            let totalWatchTime = timeTrackingManager.currentDayWatchTime
+            dailyLimitPercentage = (totalWatchTime / fixedTimeThreshold) * 100
+            
+            print("📊 Showing percentage screen: \(dailyLimitPercentage)% of daily limit")
+            return (seconds: 6, showPercentage: true)
         }
         
-        let randomCountdown = Double.random(in: countdownRange)
-        print("🎲 Randomized countdown: \(randomCountdown)s (from range: \(countdownRange))")
+        // Regular probability distribution
+        let random = Double.random(in: 0...1)
+        let waitTime: Int
         
-        return Int(randomCountdown * 1000) // Convert to milliseconds for timer precision
+        if random <= 0.5 {
+            // 50% chance: 3 seconds
+            waitTime = 3
+        } else if random <= 0.7 {
+            // 20% chance: 5 seconds
+            waitTime = 5
+        } else if random <= 0.8 {
+            // 10% chance: 6 seconds
+            waitTime = 6
+        } else if random <= 0.9 {
+            // 10% chance: 7 seconds
+            waitTime = 7
+        } else {
+            // 10% chance: 8 seconds
+            waitTime = 8
+        }
+        
+        print("🎲 Randomized wait time: \(waitTime) seconds")
+        return (seconds: waitTime, showPercentage: false)
     }
     
     private func formatTimeInterval(_ interval: TimeInterval) -> String {
@@ -309,19 +339,22 @@ struct ReelsContainerView: View {
     private func startBlackScreenTimer() {
         print("🖤 Starting black screen timer")
         
+        // Increment black screen count
+        blackScreenCount += 1
+        
         // Calculate randomized countdown
-        let countdownMilliseconds = calculateRandomizedCountdown()
-        let countdownSeconds = Double(countdownMilliseconds) / 1000.0
+        let countdownResult = calculateRandomizedCountdown()
+        let countdownSeconds = countdownResult.seconds
+        showPercentageScreen = countdownResult.showPercentage
         
         print("⏱️ Final countdown duration: \(countdownSeconds) seconds")
+        print("📊 Show percentage screen: \(showPercentageScreen)")
         
         // Pause all videos immediately
         shouldPauseVideos = true
         
-        // Reset animation values before showing
-        breakTextOffset = 0
-        breakTextOpacity = 1.0
-        blackScreenCountdown = Int(countdownSeconds.rounded())
+        // Set initial countdown
+        blackScreenCountdown = countdownSeconds
         
         // Show black screen
         withAnimation(.easeInOut(duration: 0.3)) {
@@ -329,23 +362,18 @@ struct ReelsContainerView: View {
         }
         
         // Start countdown timer
-        startCountdownTimer(totalMilliseconds: countdownMilliseconds)
+        startCountdownTimer(totalSeconds: countdownSeconds)
     }
     
-    private func startCountdownTimer(totalMilliseconds: Int) {
-        var remainingMilliseconds = totalMilliseconds
+    private func startCountdownTimer(totalSeconds: Int) {
+        var remainingSeconds = totalSeconds
         
-        blackScreenTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-            remainingMilliseconds -= 100
+        blackScreenTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+            remainingSeconds -= 1
+            self.blackScreenCountdown = max(0, remainingSeconds)
+            print("⏱️ Countdown: \(self.blackScreenCountdown)s remaining")
             
-            // Update the countdown display every second
-            if remainingMilliseconds % 1000 == 0 {
-                let remainingSeconds = remainingMilliseconds / 1000
-                self.blackScreenCountdown = max(0, remainingSeconds)
-                print("⏱️ Countdown: \(self.blackScreenCountdown)s remaining")
-            }
-            
-            if remainingMilliseconds <= 0 {
+            if remainingSeconds <= 0 {
                 print("✅ Black screen timer finished, resuming video")
                 timer.invalidate()
                 self.blackScreenTimer = nil
@@ -357,10 +385,9 @@ struct ReelsContainerView: View {
                     self.showBlackScreen = false
                 }
                 
-                // Reset animation values for next time
+                // Give a small delay to ensure video resumes properly
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.breakTextOffset = 0
-                    self.breakTextOpacity = 1.0
+                    print("🎬 Video should now be playing")
                 }
             }
         }
