@@ -1,8 +1,7 @@
 # LockedIn
 
 **Break the scroll addiction with progressive resistance**
-
-A digital wellness app that helps you break free from endless scrolling on TikTok and Instagram Reels. Scroll Jail turns your destructive scrolling habit into a game where you earn points for closing the app.
+LockedIn - A mindful YouTube Shorts viewer that breaks autopilot scrolling through behavioral psychology. Using loss aversion streaks, progressive difficulty, and mindful interruptions, it transforms passive consumption into intentional engagement while celebrating your progress toward healthier digital habits.
 
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
@@ -46,12 +45,6 @@ Reel Cage fights fire with fire. We use the same addictive mechanics against the
 - Categories Selection - Personalized content preferences
 - Shorts Viewer - Infinite scroll with smart breaks
 - Profile & Analytics - AI insights and time tracking data
-
-## The Psychology Behind Scroll Jail
-- Loss Aversion: Protect your streak from resetting to zero
-- Progressive Difficulty: Gradually increasing barriers to excessive use
-- Positive Reinforcement: Celebrate wins and progress
-- Mindful Interruptions: Break autopilot scrolling behavior
 
 ### Architecture
 ```swift
