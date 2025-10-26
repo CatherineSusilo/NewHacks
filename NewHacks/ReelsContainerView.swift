@@ -16,6 +16,13 @@ struct ReelsContainerView: View {
     @State private var blackScreenCountdown = 3
     @State private var videoPlayers: [Int: ReelsVideoPlayer] = [:]
     @State private var shouldPauseVideos = false
+    @State private var blackScreenCountdown = 0
+    @State private var sessionStartTime: Date?
+    
+    // Configuration - change these for testing/production
+    private let fixedTimeThreshold: TimeInterval = 120 // Testing purposes (change later)
+    private let sessionStartTimeKey = "SessionStartTime"
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -98,21 +105,21 @@ struct ReelsContainerView: View {
                                 .overlay(
                                     VStack {
                                         Spacer()
+                                        
                                         Text("Take a break!")
                                             .font(.title)
                                             .fontWeight(.bold)
                                             .foregroundColor(.white)
-                                            .padding()
-                                        
-                                        Text("\(blackScreenCountdown)")
-                                            .font(.system(size: 60, weight: .bold, design: .monospaced))
-                                            .foregroundColor(.white)
-                                            .padding()
-                                        
-                                        Text("seconds remaining")
-                                            .font(.headline)
-                                            .foregroundColor(.white.opacity(0.8))
-                                            .padding(.bottom, 50)
+                                            .multilineTextAlignment(.center)
+                                            .opacity(breakTextOpacity)
+                                            .offset(y: breakTextOffset)
+                                            .onAppear {
+                                                // Start the animation when black screen appears
+                                                withAnimation(.easeInOut(duration: 2.0)) {
+                                                    breakTextOffset = 200 // Move downwards
+                                                    breakTextOpacity = 0.3 // Fade near bottom
+                                                }
+                                            }
                                         
                                         Spacer()
                                     }
@@ -129,6 +136,14 @@ struct ReelsContainerView: View {
                                         .padding(8)
                                         .background(Color.black.opacity(0.6))
                                         .cornerRadius(8)
+                                    // Debug info for session time
+                                    Text("Session: \(formatTimeInterval(getSessionDuration()))")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.black.opacity(0.6))
+                                        .cornerRadius(4)
                                 }
                                 Spacer()
                                 Text(timeTrackingManager.formattedCurrentTime)
@@ -181,6 +196,54 @@ struct ReelsContainerView: View {
         .refreshable {
             loadDifferentShorts()
         }
+    }
+    
+    private func startSession() {
+        let now = Date()
+        sessionStartTime = now
+        UserDefaults.standard.set(now, forKey: sessionStartTimeKey)
+        print("🕒 Session started at: \(now)")
+    }
+    
+    private func getSessionDuration() -> TimeInterval {
+        if let startTime = sessionStartTime ?? UserDefaults.standard.object(forKey: sessionStartTimeKey) as? Date {
+            let duration = Date().timeIntervalSince(startTime)
+            print("⏱️ Session duration: \(duration) seconds")
+            return duration
+        }
+        return 0
+    }
+    
+    private func calculateRandomizedCountdown() -> Int {
+        let sessionDuration = getSessionDuration()
+        let ratio = sessionDuration / fixedTimeThreshold
+        
+        print("📊 Ratio calculation: \(sessionDuration)s / \(fixedTimeThreshold)s = \(ratio)")
+        
+        let countdownRange: ClosedRange<Double>
+        
+        if ratio <= 0.6 {
+            // 0.6 of fixed number -> 0.8 to 1.0 seconds
+            countdownRange = 0.8...1.0
+        } else if ratio <= 0.8 {
+            // 0.8 of fixed number -> 1.3 to 3.0 seconds
+            countdownRange = 1.3...3.0
+        } else {
+            // Fixed number reached -> 3.0 to 10.0 seconds
+            countdownRange = 3.0...10.0
+        }
+        
+        let randomCountdown = Double.random(in: countdownRange)
+        print("🎲 Randomized countdown: \(randomCountdown)s (from range: \(countdownRange))")
+        
+        return Int(randomCountdown * 1000) // Convert to milliseconds for timer precision
+    }
+    
+    private func formatTimeInterval(_ interval: TimeInterval) -> String {
+        let totalSeconds = Int(interval)
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
     
     private func loadVideos() {
@@ -242,25 +305,44 @@ struct ReelsContainerView: View {
     private func startBlackScreenTimer() {
         print("🖤 Starting black screen timer")
         
+        // Calculate randomized countdown
+        let countdownMilliseconds = calculateRandomizedCountdown()
+        let countdownSeconds = Double(countdownMilliseconds) / 1000.0
+        
+        print("⏱️ Final countdown duration: \(countdownSeconds) seconds")
+        
         // Pause all videos immediately
         shouldPauseVideos = true
+        
+        // Reset animation values before showing
+        breakTextOffset = 0
+        breakTextOpacity = 1.0
+        blackScreenCountdown = Int(countdownSeconds.rounded())
         
         // Show black screen
         withAnimation(.easeInOut(duration: 0.3)) {
             showBlackScreen = true
         }
         
-        // Reset countdown
-        blackScreenCountdown = 3
+        // Start countdown timer
+        startCountdownTimer(totalMilliseconds: countdownMilliseconds)
+    }
+    
+    private func startCountdownTimer(totalMilliseconds: Int) {
+        var remainingMilliseconds = totalMilliseconds
         
-        // Start timer
-        blackScreenTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
-            print("⏱️ Black screen countdown: \(self.blackScreenCountdown)")
-            self.blackScreenCountdown -= 1
+        blackScreenTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+            remainingMilliseconds -= 100
             
-            if self.blackScreenCountdown <= 0 {
+            // Update the countdown display every second
+            if remainingMilliseconds % 1000 == 0 {
+                let remainingSeconds = remainingMilliseconds / 1000
+                self.blackScreenCountdown = max(0, remainingSeconds)
+                print("⏱️ Countdown: \(self.blackScreenCountdown)s remaining")
+            }
+            
+            if remainingMilliseconds <= 0 {
                 print("✅ Black screen timer finished, resuming video")
-                // Timer finished, hide black screen
                 timer.invalidate()
                 self.blackScreenTimer = nil
                 
@@ -269,6 +351,12 @@ struct ReelsContainerView: View {
                 
                 withAnimation(.easeInOut(duration: 0.3)) {
                     self.showBlackScreen = false
+                }
+                
+                // Reset animation values for next time
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.breakTextOffset = 0
+                    self.breakTextOpacity = 1.0
                 }
             }
         }
