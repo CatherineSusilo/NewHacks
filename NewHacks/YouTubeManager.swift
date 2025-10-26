@@ -6,7 +6,7 @@
 import Foundation
 
 class YouTubeManager: ObservableObject {
-    private let apiKey = "AIzaSyBl6AcCUSpuRNdE-Vx6-OWVQZ-DuwcKEv4" // Replace with your actual API key
+    private let apiKey = "AIzaSyCwmwIT02BK-t6G2vaqzCozWN0AL5bul9I" // Replace with your actual API key
     private let baseURL = "https://www.googleapis.com/youtube/v3"
     
     @Published var videoIDs: [String] = []
