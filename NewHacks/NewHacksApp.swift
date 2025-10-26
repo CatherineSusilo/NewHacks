@@ -9,9 +9,19 @@ import SwiftUI
 
 @main
 struct NewHacksApp: App {
+    @StateObject private var userDataManager = UserDataManager()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                if let user = userDataManager.currentUser, !user.preferredCategories.isEmpty {
+                    ContentView()
+                        .environmentObject(userDataManager)
+                } else {
+                    AuthView()
+                        .environmentObject(userDataManager)
+                }
+            }
         }
     }
 }

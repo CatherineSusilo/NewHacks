@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct ReelsContainerView: View {
+    @EnvironmentObject var userDataManager: UserDataManager
     @State private var currentIndex = 0
     @StateObject private var youTubeManager = YouTubeManager()
     @State private var dragOffset: CGFloat = 0
@@ -20,8 +21,9 @@ struct ReelsContainerView: View {
     @State private var blackScreenCountdown = 0
     @State private var sessionStartTime: Date?
     
-    // Configuration - change these for testing/production
-    private let fixedTimeThreshold: TimeInterval = 600 // 10 minutes for testing (change to 3600 for 1 hour in production)
+    private var fixedTimeThreshold: TimeInterval {
+        userDataManager.currentUser?.fixedTimeThreshold ?? 600 // Default fallback
+    }
     private let sessionStartTimeKey = "SessionStartTime"
     
     var body: some View {
@@ -258,10 +260,12 @@ struct ReelsContainerView: View {
     }
     
     private func loadYouTubeShorts() {
-        // Search for various Shorts content
-        let searchTerms = ["funny shorts", "dance shorts", "comedy shorts", "gaming shorts", "music shorts"]
-        let randomTerm = searchTerms.randomElement() ?? "shorts"
+        let userCategories = userDataManager.currentUser?.preferredCategories ?? []
+        let searchTerms = userCategories.isEmpty ?
+            ["funny shorts", "dance shorts", "comedy shorts"] :
+            userCategories.map { "\($0.lowercased()) shorts" }
         
+        let randomTerm = searchTerms.randomElement() ?? "shorts"
         youTubeManager.fetchShortsVideos(query: randomTerm, maxResults: 15)
     }
     

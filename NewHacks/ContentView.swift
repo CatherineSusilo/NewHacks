@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var userDataManager: UserDataManager
     @StateObject private var timeTrackingManager = TimeTrackingManager()
     @State private var selectedTab = 0
     

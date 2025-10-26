@@ -9,26 +9,128 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var timeTrackingManager: TimeTrackingManager
+    @EnvironmentObject var userDataManager: UserDataManager
     @State private var fakeTimeHistory: [DailyTimeEntry] = []
     @State private var showingCalendar = false
+    @State private var showingLogoutAlert = false
+    @State private var showingEditPreferences = false
+    @State private var editedFixedTimeThreshold: TimeInterval = 600.0
+    @State private var editedCategories: Set<String> = []
+    
+    let availableCategories = [
+        "Funny", "Dance", "Comedy", "Gaming", "Music", "Art",
+        "Cooking", "Sports", "Travel", "Animals", "Education",
+        "Beauty", "Fashion", "DIY", "Science", "Technology"
+    ]
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Time History")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
-                        Text("Your video watching activity over the past week")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    // User Profile Header
+                    if let user = userDataManager.currentUser {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(user.name)
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    
+                                    Text(user.email)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("Age: \(user.age)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                // Edit and Logout Buttons
+                                HStack(spacing: 12) {
+                                    // Edit Preferences Button
+                                    Button(action: {
+                                        editedFixedTimeThreshold = user.fixedTimeThreshold
+                                        editedCategories = Set(user.preferredCategories)
+                                        showingEditPreferences = true
+                                    }) {
+                                        Image(systemName: "gearshape.fill")
+                                            .foregroundColor(.blue)
+                                            .padding(8)
+                                            .background(Color.blue.opacity(0.1))
+                                            .cornerRadius(8)
+                                    }
+                                    
+                                    // Logout Button
+                                    Button(action: {
+                                        showingLogoutAlert = true
+                                    }) {
+                                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                                            .foregroundColor(.red)
+                                            .padding(8)
+                                            .background(Color.red.opacity(0.1))
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                            
+                            // User Preferences
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Preferences")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    Text("Tap gear to edit")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                }
+                                
+                                // Break Threshold
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Break Threshold")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                    
+                                    Text(formatTimeThreshold(user.fixedTimeThreshold))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color.blue.opacity(0.1))
+                                        .cornerRadius(8)
+                                }
+                                
+                                // Categories
+                                if !user.preferredCategories.isEmpty {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Preferred Categories")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        
+                                        FlowLayout(spacing: 8) {
+                                            ForEach(user.preferredCategories, id: \.self) { category in
+                                                Text(category)
+                                                    .font(.caption)
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 6)
+                                                    .background(Color.green.opacity(0.1))
+                                                    .cornerRadius(12)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top)
                     }
-                    .padding(.horizontal)
-                    .padding(.top)
                     
                     // Bar Chart with Swipe to Calendar
                     VStack(alignment: .leading, spacing: 16) {
@@ -112,12 +214,336 @@ struct ProfileView: View {
                 }
             }
             .navigationBarHidden(true)
+            .sheet(isPresented: $showingEditPreferences) {
+                EditPreferencesView(
+                    userDataManager: userDataManager,
+                    fixedTimeThreshold: $editedFixedTimeThreshold,
+                    selectedCategories: $editedCategories,
+                    availableCategories: availableCategories,
+                    isPresented: $showingEditPreferences
+                )
+            }
+            .alert("Log Out", isPresented: $showingLogoutAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Log Out", role: .destructive) {
+                    userDataManager.logout()
+                }
+            } message: {
+                Text("Are you sure you want to log out?")
+            }
         }
         .sheet(isPresented: $showingCalendar) {
             MonthlyCalendarView(timeTrackingManager: timeTrackingManager)
         }
         .onAppear {
             generateFakeData()
+        }
+    }
+    // MARK: - Edit Preferences View
+    struct EditPreferencesView: View {
+        @ObservedObject var userDataManager: UserDataManager
+        @Binding var fixedTimeThreshold: TimeInterval
+        @Binding var selectedCategories: Set<String>
+        let availableCategories: [String]
+        @Binding var isPresented: Bool
+        @State private var showSuccessMessage = false
+        
+        var body: some View {
+            NavigationView {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Header
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Edit Preferences")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            
+                            Text("Update your break threshold and preferred categories")
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        // Break Threshold Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Break Time Threshold")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Text("Set when you want breaks to start appearing")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Picker("Time Threshold", selection: $fixedTimeThreshold) {
+                                Text("30 min").tag(1800.0)
+                                Text("60 min").tag(3600.0)
+                                Text("90 min").tag(5400.0)
+                                Text("120 min").tag(7200.0)
+                                Text("150 min").tag(9000.0)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            
+                            Text("Selected: \(formatTimeThreshold(fixedTimeThreshold))")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                                .padding(.top, 4)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // Categories Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Preferred Categories")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Text("Select categories to personalize your Shorts feed")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            LazyVGrid(columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ], spacing: 12) {
+                                ForEach(availableCategories, id: \.self) { category in
+                                    CategoryChip(
+                                        title: category,
+                                        isSelected: selectedCategories.contains(category),
+                                        onTap: {
+                                            toggleCategory(category)
+                                        }
+                                    )
+                                }
+                            }
+                            
+                            Text("Selected \(selectedCategories.count) categories")
+                                .font(.caption)
+                                .foregroundColor(selectedCategories.count >= 3 ? .green : .orange)
+                                .padding(.top, 4)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // Save Button
+                        Button(action: savePreferences) {
+                            HStack {
+                                Text("Save Preferences")
+                                    .fontWeight(.semibold)
+                                Image(systemName: "checkmark.circle.fill")
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(selectedCategories.isEmpty ? Color.gray : Color.blue)
+                            .cornerRadius(12)
+                        }
+                        .disabled(selectedCategories.isEmpty)
+                        .padding(.top, 20)
+                        
+                        Spacer()
+                    }
+                    .padding()
+                }
+                .navigationBarTitle("Edit Preferences", displayMode: .inline)
+                .navigationBarItems(
+                    leading: Button("Cancel") {
+                        isPresented = false
+                    },
+                    trailing: Button("Save") {
+                        savePreferences()
+                    }
+                    .disabled(selectedCategories.isEmpty)
+                )
+                .overlay(
+                    Group {
+                        if showSuccessMessage {
+                            SuccessOverlay(message: "Preferences Updated!")
+                                .onAppear {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                        showSuccessMessage = false
+                                        isPresented = false
+                                    }
+                                }
+                        }
+                    }
+                )
+            }
+        }
+        
+        private func toggleCategory(_ category: String) {
+            if selectedCategories.contains(category) {
+                selectedCategories.remove(category)
+            } else {
+                selectedCategories.insert(category)
+            }
+        }
+        
+        private func savePreferences() {
+            let categories = Array(selectedCategories)
+            userDataManager.updateUserCategories(categories)
+            
+            // Update fixed time threshold
+            if let user = userDataManager.currentUser {
+                let updatedUser = User(
+                    name: user.name,
+                    age: user.age,
+                    email: user.email,
+                    password: user.password,
+                    fixedTimeThreshold: fixedTimeThreshold,
+                    preferredCategories: categories
+                )
+                
+                // Update in users array
+                if let index = userDataManager.users.firstIndex(where: { $0.id == user.id }) {
+                    userDataManager.users[index] = updatedUser
+                }
+                
+                userDataManager.currentUser = updatedUser
+                userDataManager.saveUsers()
+                userDataManager.saveCurrentUser()
+            }
+            
+            withAnimation {
+                showSuccessMessage = true
+            }
+        }
+        
+        private func formatTimeThreshold(_ seconds: TimeInterval) -> String {
+            let minutes = Int(seconds) / 60
+            if minutes < 90 {
+                return "\(minutes) minutes"
+            } else {
+                let hours = minutes / 60
+                return "\(hours) hour\(hours > 1 ? "s" : "")"
+            }
+        }
+    }
+
+    // MARK: - Flow Layout for Categories
+    struct FlowLayout: Layout {
+        var spacing: CGFloat = 8
+        
+        func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+            let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+            
+            var totalHeight: CGFloat = 0
+            var totalWidth: CGFloat = 0
+            
+            var lineWidth: CGFloat = 0
+            var lineHeight: CGFloat = 0
+            
+            for size in sizes {
+                if lineWidth + size.width + spacing > proposal.width ?? 0 {
+                    totalHeight += lineHeight + spacing
+                    totalWidth = max(totalWidth, lineWidth)
+                    lineWidth = size.width
+                    lineHeight = size.height
+                } else {
+                    lineWidth += size.width + spacing
+                    lineHeight = max(lineHeight, size.height)
+                }
+            }
+            
+            totalHeight += lineHeight
+            totalWidth = max(totalWidth, lineWidth)
+            
+            return CGSize(width: totalWidth, height: totalHeight)
+        }
+        
+        func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+            let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+            
+            var lineX = bounds.minX
+            var lineY = bounds.minY
+            var lineHeight: CGFloat = 0
+            
+            for index in subviews.indices {
+                let size = sizes[index]
+                
+                if lineX + size.width > bounds.maxX {
+                    lineY += lineHeight + spacing
+                    lineHeight = 0
+                    lineX = bounds.minX
+                }
+                
+                subviews[index].place(
+                    at: CGPoint(x: lineX, y: lineY),
+                    proposal: ProposedViewSize(size)
+                )
+                
+                lineX += size.width + spacing
+                lineHeight = max(lineHeight, size.height)
+            }
+        }
+    }
+
+    // MARK: - Success Overlay
+    struct SuccessOverlay: View {
+        let message: String
+        
+        var body: some View {
+            ZStack {
+                Color.black.opacity(0.8)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 20) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.green)
+                    
+                    Text(message)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+                .background(Color(.systemBackground))
+                .cornerRadius(16)
+                .padding(40)
+            }
+        }
+    }
+
+    // MARK: - Category Chip
+    struct CategoryChip: View {
+        let title: String
+        let isSelected: Bool
+        let onTap: () -> Void
+        
+        var body: some View {
+            Button(action: onTap) {
+                HStack {
+                    Text(title)
+                        .fontWeight(.medium)
+                    
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                }
+                .foregroundColor(isSelected ? .white : .primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    isSelected ? Color.blue : Color(.systemGray6)
+                )
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: 1)
+                )
+            }
+        }
+    }
+    private func formatTimeThreshold(_ seconds: TimeInterval) -> String {
+        let minutes = Int(seconds) / 60
+        if minutes < 90 {
+            return "\(minutes) minutes"
+        } else {
+            let hours = minutes / 60
+            return "\(hours) hour\(hours > 1 ? "s" : "")"
         }
     }
     
