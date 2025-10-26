@@ -122,16 +122,6 @@ struct ReelsContainerView: View {
                                                 }
                                             }
                                         
-                                        Text("\(blackScreenCountdown)")
-                                            .font(.system(size: 60, weight: .bold, design: .monospaced))
-                                            .foregroundColor(.white)
-                                            .padding()
-                                        
-                                        Text("seconds remaining")
-                                            .font(.headline)
-                                            .foregroundColor(.white.opacity(0.8))
-                                            .padding(.bottom, 50)
-                                        
                                         Spacer()
                                     }
                                 )
