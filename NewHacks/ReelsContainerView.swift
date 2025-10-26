@@ -7,7 +7,6 @@ import SwiftUI
 
 struct ReelsContainerView: View {
     @EnvironmentObject var userDataManager: UserDataManager
-
     @State private var currentIndex = 0
     @StateObject private var youTubeManager = YouTubeManager()
     @State private var dragOffset: CGFloat = 0
