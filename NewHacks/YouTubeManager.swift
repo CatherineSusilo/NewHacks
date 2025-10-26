@@ -13,7 +13,12 @@ class YouTubeManager: ObservableObject {
     @Published var isLoading = false
     @Published var error: String?
     
-    func fetchShortsVideos(channelId: String? = nil, query: String? = "shorts", maxResults: Int = 15) {
+    // Preloading state
+    private var currentPageToken: String?
+    private var isPreloading = false
+    private let preloadThreshold = 5 // Start preloading when 5 videos remain
+    
+    func fetchShortsVideos(channelId: String? = nil, query: String? = "shorts", maxResults: Int = 50) {
         isLoading = true
         error = nil
         
@@ -99,11 +104,79 @@ class YouTubeManager: ObservableObject {
     
     // Add this method to fetch different content
     func fetchTrendingShorts() {
-        fetchShortsVideos(query: "trending shorts", maxResults: 15)
+        fetchShortsVideos(query: "trending shorts", maxResults: 50)
     }
     
     func fetchPopularShorts() {
-        fetchShortsVideos(query: "popular shorts", maxResults: 15)
+        fetchShortsVideos(query: "popular shorts", maxResults: 50)
+    }
+    
+    // MARK: - Preloading Methods
+    
+    func checkAndPreloadIfNeeded(currentIndex: Int) {
+        let remainingVideos = videoIDs.count - currentIndex - 1
+        
+        if remainingVideos <= preloadThreshold && !isPreloading && currentPageToken != nil {
+            print("🔄 Preloading more videos (remaining: \(remainingVideos))")
+            preloadMoreVideos()
+        }
+    }
+    
+    private func preloadMoreVideos() {
+        guard let pageToken = currentPageToken, !isPreloading else { return }
+        
+        isPreloading = true
+        print("📥 Preloading next page of videos...")
+        
+        var urlComponents = URLComponents(string: "\(baseURL)/search")
+        var queryItems = [
+            URLQueryItem(name: "part", value: "snippet"),
+            URLQueryItem(name: "type", value: "video"),
+            URLQueryItem(name: "videoDuration", value: "short"),
+            URLQueryItem(name: "maxResults", value: "25"), // Load 25 more videos
+            URLQueryItem(name: "pageToken", value: pageToken),
+            URLQueryItem(name: "key", value: apiKey)
+        ]
+        
+        // Use the same search terms as the original search
+        queryItems.append(URLQueryItem(name: "q", value: "shorts"))
+        
+        urlComponents?.queryItems = queryItems
+        
+        guard let url = urlComponents?.url else {
+            isPreloading = false
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                self?.isPreloading = false
+                
+                if let error = error {
+                    print("❌ Preload error: \(error)")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("❌ No preload data received")
+                    return
+                }
+                
+                do {
+                    let decoder = JSONDecoder()
+                    let searchResponse = try decoder.decode(YouTubeSearchResponse.self, from: data)
+                    let newVideoIDs = searchResponse.items.map { $0.id.videoId }
+                    
+                    // Append new videos to existing list
+                    self?.videoIDs.append(contentsOf: newVideoIDs)
+                    self?.currentPageToken = searchResponse.nextPageToken
+                    
+                    print("✅ Preloaded \(newVideoIDs.count) more videos (total: \(self?.videoIDs.count ?? 0))")
+                } catch {
+                    print("❌ Preload JSON error: \(error)")
+                }
+            }
+        }.resume()
     }
 }
 
@@ -111,6 +184,7 @@ class YouTubeManager: ObservableObject {
 
 struct YouTubeSearchResponse: Codable {
     let items: [YouTubeSearchItem]
+    let nextPageToken: String?
 }
 
 struct YouTubeSearchItem: Codable {

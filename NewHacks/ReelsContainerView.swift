@@ -92,6 +92,9 @@ struct ReelsContainerView: View {
                             // Pause all other videos when switching
                             pauseAllVideosExcept(current: newIndex)
                             
+                            // Check if we need to preload more videos
+                            youTubeManager.checkAndPreloadIfNeeded(currentIndex: newIndex)
+                            
                             // Ensure tracking continues when switching videos
                             if !timeTrackingManager.isCurrentlyTracking {
                                 timeTrackingManager.startTracking()
@@ -134,12 +137,6 @@ struct ReelsContainerView: View {
                         VStack {
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text("Short \(currentIndex + 1) of \(youTubeManager.videoIDs.count)")
-                                        .foregroundColor(.white)
-                                        .padding(8)
-                                        .background(Color.black.opacity(0.6))
-                                        .cornerRadius(8)
-                                    
                                     // Debug info for session time
                                     Text("Session: \(formatTimeInterval(getSessionDuration()))")
                                         .font(.caption)
@@ -266,7 +263,7 @@ struct ReelsContainerView: View {
             userCategories.map { "\($0.lowercased()) shorts" }
         
         let randomTerm = searchTerms.randomElement() ?? "shorts"
-        youTubeManager.fetchShortsVideos(query: randomTerm, maxResults: 15)
+        youTubeManager.fetchShortsVideos(query: randomTerm, maxResults: 50)
     }
     
     private func loadDifferentShorts() {
@@ -279,7 +276,7 @@ struct ReelsContainerView: View {
         let randomTerm = searchTerms.randomElement() ?? "shorts"
         
         print("🔄 Loading new shorts with term: \(randomTerm)")
-        youTubeManager.fetchShortsVideos(query: randomTerm, maxResults: 15)
+        youTubeManager.fetchShortsVideos(query: randomTerm, maxResults: 50)
     }
     
     private func loadSampleShorts() {
