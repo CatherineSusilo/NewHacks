@@ -23,13 +23,34 @@ struct AuthView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
+                    ZStack {
+                        Circle()
+                            .fill(LinearGradient(
+                                gradient: Gradient(colors: [.blue, .purple]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                            .frame(width: 100, height: 100)
+                            .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
+                        
+                        Image("logo")
+                            .font(.system(size: 40, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.top, 20)
+                    
+                    // App Name
+                    Text("LockedIn")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
                     // Header
                     VStack(spacing: 8) {
                         Text(isLoginMode ? "Welcome Back" : "Create Account")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                         
-                        Text(isLoginMode ? "Sign in to continue" : "Join us to get started")
+                        Text(isLoginMode ? "Sign in to continue" : "Join LockedIn to get started")
                             .foregroundColor(.secondary)
                     }
                     .padding(.top, 40)
