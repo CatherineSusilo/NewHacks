@@ -296,13 +296,13 @@ struct ReelsContainerView: View {
     }
     
     private func checkTimeAndShowBlackScreen() {
-        // Check if total watch time exceeds 20 seconds
+        // Check if total watch time exceeds 60% of fixedTimeThreshold
         print("🔍 Checking time: \(timeTrackingManager.currentDayWatchTime) seconds")
-        if timeTrackingManager.currentDayWatchTime > 20 {
-            print("⏰ Time exceeded 20 seconds, starting black screen")
+        if timeTrackingManager.currentDayWatchTime > (0.6 * fixedTimeThreshold)/60 {
+            print("⏰ Time exceeded, starting black screen")
             startBlackScreenTimer()
         } else {
-            print("✅ Time is under 20 seconds, no black screen needed")
+            print("✅ Time is under, no black screen needed")
         }
     }
     
