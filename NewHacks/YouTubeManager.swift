@@ -6,12 +6,8 @@
 import Foundation
 
 class YouTubeManager: ObservableObject {
-    private let apiKey: String
+    private let apiKey = "AIzaSyBl6AcCUSpuRNdE-Vx6-OWVQZ-DuwcKEv4" // Replace with your actual API key
     private let baseURL = "https://www.googleapis.com/youtube/v3"
-    
-    init() {
-        self.apiKey = ConfigurationManager.shared.youTubeAPIKey
-    }
     
     @Published var videoIDs: [String] = []
     @Published var isLoading = false
@@ -21,13 +17,8 @@ class YouTubeManager: ObservableObject {
         isLoading = true
         error = nil
         
-        // Check if API key is available
-        guard ConfigurationManager.shared.hasValidAPIKey else {
-            error = "YouTube API key not configured. Please add your API key to Config.plist"
-            isLoading = false
-            print("❌ YouTube API key not configured")
-            return
-        }
+        // REMOVE THIS: Don't use hardcoded test videos
+        // let testVideoIDs = ["dQw4w9WgXcQ", "jNQXAC9IVRw", ...]
         
         // UNCOMMENT AND USE THE ACTUAL API CALL:
         var urlComponents = URLComponents(string: "\(baseURL)/search")

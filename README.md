@@ -11,9 +11,8 @@ A digital wellness app that helps you break free from endless scrolling on TikTo
 ## The Problem
 
 Infinite scroll platforms like TikTok and Instagram Reels are designed to be addictive, using perfected algorithms that keep users mindlessly swiping for hours. This leads to:
-
 - Decreased productivity
-- Reduced attention spans
+- Reduced attention spans  
 - Wasted time
 - Digital guilt
 
@@ -29,84 +28,34 @@ Reel Cage fights fire with fire. We use the same addictive mechanics against the
 ## How It Works
 
 ### 1. Personalized Content
-
 - Dual Feed Support TikTok & Instagram Integration: Access both platforms in one controlled environment
 - Category-Based Content: Users select interests during onboarding (Gaming, Comedy, Sports, Cooking, Tech, etc.)
 - Smart Content Curation: Personalized feed based on selected categories and engagement
 
 ### 2. Progressive Intervention System
-
 Normal Mode → Warning (80%) → Minor Lag (100%) → Lag of Shame (100%+)
 
-### 3. The "Lag of Shame"
-
+### 3. The "Lag of Shame" 
 When you exceed your daily time limit:
-
 - **Phase 1**: 1-second delay between reels
-- **Phase 2**: 3-second forced pause with dimmed screen
+- **Phase 2**: 3-second forced pause with dimmed screen  
 - **Phase 3**: 5-second intervention with streak protection choice
 
-### 4. Focus Streak System
-
+### 4. Focus Streak System 
 - Duolingo-style consecutive day counter
 - Save your streak by closing the app when prompted
 - Break your streak if you choose to continue scrolling
 - Visual progress tracking and achievements
 
 ## The Psychology Behind Scroll Jail
-
 - Loss Aversion: Protect your streak from resetting to zero
 - Progressive Difficulty: Gradually increasing barriers to excessive use
 - Positive Reinforcement: Celebrate wins and progress
 - Mindful Interruptions: Break autopilot scrolling behavior
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Xcode 14.0+
-- iOS 15.0+
-- YouTube Data API v3 key
-
-### Setup Instructions
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/yourusername/NewHacks.git
-   cd NewHacks
-   ```
-
-2. **Configure YouTube API Key**
-
-   - Get a YouTube Data API v3 key from [Google Cloud Console](https://console.cloud.google.com/)
-   - Run the setup script:
-     ```bash
-     ./setup.sh
-     ```
-   - Or manually copy `Config.example.plist` to `Config.plist`:
-     ```bash
-     cp NewHacks/Config.example.plist NewHacks/Config.plist
-     ```
-   - Open `NewHacks/Config.plist` and replace `YOUR_YOUTUBE_API_KEY_HERE` with your actual API key
-   - **Important**: Never commit `Config.plist` to version control (it's already in `.gitignore`)
-
-3. **Build and Run**
-   - Open `NewHacks.xcodeproj` in Xcode
-   - Build and run on your device or simulator
-
-### Alternative: Environment Variable
-
-For CI/CD or production deployments, you can set the API key as an environment variable:
-
-```bash
-export YOUTUBE_API_KEY="your_api_key_here"
-```
-
 ## 🛠️ Technical Implementation
 
 ### Architecture
-
 ```swift
 ScrollJail/
 ├── ScrollJail/
@@ -140,4 +89,3 @@ ScrollJail/
 │   └── AppIcon.appiconset
 └── Preview Content/
     └── MockData.swift
-```
