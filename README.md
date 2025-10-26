@@ -1,4 +1,4 @@
-# NewHacks
+# LockedIn
 
 **Break the scroll addiction with progressive resistance**
 
@@ -17,43 +17,41 @@ Infinite scroll platforms like TikTok and Instagram Reels are designed to be add
 - Digital guilt
 
 ## Our Solution
-
 Reel Cage fights fire with fire. We use the same addictive mechanics against these platforms by creating a controlled environment where we can:
-
 - **Reward stopping** instead of endless scrolling
 - **Break the rhythm** with progressive resistance
 - **Gamify self-control** with streak-based motivation
 - **Provide insights** into your digital habits
 
+## Features:
+- 🔄 Smart Break System: Automatic breaks based on your personalized time thresholds
+- 🧠 AI Insights: Gemini AI analyzes your scrolling habits and provides personalized recommendations
+- 🎯 Personalized Content: Category-based YouTube Shorts feed tailored to your preferences
+- 📊 Progress Tracking: Visual analytics and time tracking with weekly insights
+- 🔐 User Profiles: Secure local authentication with customizable preferences
+
 ## How It Works
+1. Set Preferences: Choose your break threshold (30-150 minutes) and preferred content categories
+2. Watch Mindfully: Enjoy personalized YouTube Shorts with AI-curated content
+3. Take Breaks: Automatic breaks trigger at 60% of your set threshold to prevent endless scrolling
+4. Get Insights: Receive weekly AI-powered analysis of your scrolling habits
 
-### 1. Personalized Content
-- Dual Feed Support TikTok & Instagram Integration: Access both platforms in one controlled environment
-- Category-Based Content: Users select interests during onboarding (Gaming, Comedy, Sports, Cooking, Tech, etc.)
-- Smart Content Curation: Personalized feed based on selected categories and engagement
+## Tech Stack
+- SwiftUI - Modern iOS interface
+- YouTube Data API - Shorts content fetching
+- UserDefaults - Local data persistence
 
-### 2. Progressive Intervention System
-Normal Mode → Warning (80%) → Minor Lag (100%) → Lag of Shame (100%+)
-
-### 3. The "Lag of Shame" 
-When you exceed your daily time limit:
-- **Phase 1**: 1-second delay between reels
-- **Phase 2**: 3-second forced pause with dimmed screen  
-- **Phase 3**: 5-second intervention with streak protection choice
-
-### 4. Focus Streak System 
-- Duolingo-style consecutive day counter
-- Save your streak by closing the app when prompted
-- Break your streak if you choose to continue scrolling
-- Visual progress tracking and achievements
+## Pages
+- Auth Screen - Login/Signup with vermillion-themed design
+- Categories Selection - Personalized content preferences
+- Shorts Viewer - Infinite scroll with smart breaks
+- Profile & Analytics - AI insights and time tracking data
 
 ## The Psychology Behind Scroll Jail
 - Loss Aversion: Protect your streak from resetting to zero
 - Progressive Difficulty: Gradually increasing barriers to excessive use
 - Positive Reinforcement: Celebrate wins and progress
 - Mindful Interruptions: Break autopilot scrolling behavior
-
-## 🛠️ Technical Implementation
 
 ### Architecture
 ```swift
@@ -89,3 +87,6 @@ ScrollJail/
 │   └── AppIcon.appiconset
 └── Preview Content/
     └── MockData.swift
+```
+License
+MIT License - feel free to use this project for learning and development!
