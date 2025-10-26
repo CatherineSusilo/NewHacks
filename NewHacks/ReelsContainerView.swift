@@ -13,14 +13,15 @@ struct ReelsContainerView: View {
     @ObservedObject var timeTrackingManager: TimeTrackingManager
     @State private var showBlackScreen = false
     @State private var blackScreenTimer: Timer?
-    @State private var blackScreenCountdown = 3
+    @State private var breakTextOffset: CGFloat = 0
+    @State private var breakTextOpacity: Double = 1.0
     @State private var videoPlayers: [Int: ReelsVideoPlayer] = [:]
     @State private var shouldPauseVideos = false
     @State private var blackScreenCountdown = 0
     @State private var sessionStartTime: Date?
     
     // Configuration - change these for testing/production
-    private let fixedTimeThreshold: TimeInterval = 120 // Testing purposes (change later)
+    private let fixedTimeThreshold: TimeInterval = 600 // 10 minutes for testing (change to 3600 for 1 hour in production)
     private let sessionStartTimeKey = "SessionStartTime"
     
     var body: some View {
@@ -121,6 +122,16 @@ struct ReelsContainerView: View {
                                                 }
                                             }
                                         
+                                        Text("\(blackScreenCountdown)")
+                                            .font(.system(size: 60, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.white)
+                                            .padding()
+                                        
+                                        Text("seconds remaining")
+                                            .font(.headline)
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .padding(.bottom, 50)
+                                        
                                         Spacer()
                                     }
                                 )
@@ -136,6 +147,7 @@ struct ReelsContainerView: View {
                                         .padding(8)
                                         .background(Color.black.opacity(0.6))
                                         .cornerRadius(8)
+                                    
                                     // Debug info for session time
                                     Text("Session: \(formatTimeInterval(getSessionDuration()))")
                                         .font(.caption)
@@ -185,6 +197,7 @@ struct ReelsContainerView: View {
         .onAppear {
             loadYouTubeShorts()
             timeTrackingManager.startTracking()
+            startSession()
             checkTimeAndShowBlackScreen()
         }
         .onDisappear {
@@ -224,12 +237,12 @@ struct ReelsContainerView: View {
         
         if ratio <= 0.6 {
             // 0.6 of fixed number -> 0.8 to 1.0 seconds
-            countdownRange = 0.8...1.0
+            countdownRange = 0.8...1
         } else if ratio <= 0.8 {
-            // 0.8 of fixed number -> 1.3 to 3.0 seconds
-            countdownRange = 1.3...3.0
+            // 0.8 of fixed number -> 1 to 3 seconds
+            countdownRange = 1.0...3.0
         } else {
-            // Fixed number reached -> 3.0 to 10.0 seconds
+            // Fixed number reached -> 3 to 10 seconds
             countdownRange = 3.0...10.0
         }
         
