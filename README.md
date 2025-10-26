@@ -24,7 +24,6 @@ Reel Cage fights fire with fire. We use the same addictive mechanics against the
 
 ## Features:
 - 🔄 Smart Break System: Automatic breaks based on your personalized time thresholds
-- 🧠 AI Insights: Gemini AI analyzes your scrolling habits and provides personalized recommendations
 - 🎯 Personalized Content: Category-based YouTube Shorts feed tailored to your preferences
 - 📊 Progress Tracking: Visual analytics and time tracking with weekly insights
 - 🔐 User Profiles: Secure local authentication with customizable preferences
