@@ -34,6 +34,9 @@ class TimeTrackingManager: ObservableObject {
     private var sessionStartTime: Date?
     private var baseWatchTime: TimeInterval = 0
     
+    // Callback for leaderboard updates
+    var onScreenTimeUpdate: ((TimeInterval) -> Void)?
+    
     init() {
         loadTimeHistory()
         checkForDayReset()
@@ -60,6 +63,7 @@ class TimeTrackingManager: ObservableObject {
         
         saveCurrentDayTime()
         updateTimeHistory()
+        notifyScreenTimeUpdate()
     }
     
     func pauseTracking() {
@@ -73,6 +77,7 @@ class TimeTrackingManager: ObservableObject {
         
         saveCurrentDayTime()
         updateTimeHistory()
+        notifyScreenTimeUpdate()
     }
     
     func resumeTracking() {
@@ -169,5 +174,15 @@ class TimeTrackingManager: ObservableObject {
     
     var isCurrentlyTracking: Bool {
         return sessionStartTime != nil
+    }
+    
+    // Calculate total screen time across all days
+    var totalScreenTime: TimeInterval {
+        return timeHistory.reduce(0) { $0 + $1.totalWatchTime }
+    }
+    
+    // Method to notify leaderboard of screen time changes
+    private func notifyScreenTimeUpdate() {
+        onScreenTimeUpdate?(totalScreenTime)
     }
 }

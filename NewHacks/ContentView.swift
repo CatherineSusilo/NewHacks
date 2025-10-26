@@ -22,13 +22,21 @@ struct ContentView: View {
                 }
                 .tag(0)
             
+            // Leaderboard Tab
+            LeaderboardView(timeTrackingManager: timeTrackingManager)
+                .tabItem {
+                    Image(systemName: "trophy.fill")
+                    Text("Leaderboard")
+                }
+                .tag(1)
+            
             // Profile Tab
             ProfileView(timeTrackingManager: timeTrackingManager)
                 .tabItem {
                     Image(systemName: "person.circle.fill")
                     Text("Profile")
                 }
-                .tag(1)
+                .tag(2)
         }
         .onChange(of: selectedTab) { newTab in
             // Pause timer when switching away from videos tab
