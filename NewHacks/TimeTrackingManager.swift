@@ -24,6 +24,7 @@ struct DailyTimeEntry: Codable, Identifiable {
 class TimeTrackingManager: ObservableObject {
     @Published var currentDayWatchTime: TimeInterval = 0
     @Published var timeHistory: [DailyTimeEntry] = []
+    @Published var isActive = false
     
     private let userDefaults = UserDefaults.standard
     private let timeHistoryKey = "TimeHistory"
@@ -43,9 +44,20 @@ class TimeTrackingManager: ObservableObject {
     // MARK: - Public Methods
     
     func startTracking() {
-        guard sessionStartTime == nil else { return }
+        guard !isActive else {
+            print("⏱️ Tracking already active")
+            return
+        }
+        
+        guard sessionStartTime == nil else {
+            print("⏱️ Session already started")
+            return
+        }
+        
+        print("▶️ Starting time tracking")
         sessionStartTime = Date()
         baseWatchTime = currentDayWatchTime
+        isActive = true
         startTimer()
     }
     
@@ -57,28 +69,39 @@ class TimeTrackingManager: ObservableObject {
         
         sessionStartTime = nil
         stopTimer()
-        
+        isActive = false
         saveCurrentDayTime()
         updateTimeHistory()
     }
     
     func pauseTracking() {
-        guard let startTime = sessionStartTime else { return }
+        guard let startTime = sessionStartTime else {
+            print("⏸️ No active session to pause")
+            return
+        }
         
+        print("⏸️ Pausing time tracking")
         let sessionDuration = Date().timeIntervalSince(startTime)
         currentDayWatchTime = baseWatchTime + sessionDuration
         
         sessionStartTime = nil
         stopTimer()
+        isActive = false
         
         saveCurrentDayTime()
         updateTimeHistory()
     }
     
     func resumeTracking() {
-        guard sessionStartTime == nil else { return }
+        guard sessionStartTime == nil else {
+            print("▶️ Session already running")
+            return
+        }
+        
+        print("▶️ Resuming time tracking")
         sessionStartTime = Date()
         baseWatchTime = currentDayWatchTime
+        isActive = true
         startTimer()
     }
     
@@ -90,11 +113,13 @@ class TimeTrackingManager: ObservableObject {
             guard let self = self else { return }
             self.updateCurrentTime()
         }
+        print("⏱️ Timer started")
     }
     
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
+        print("⏱️ Timer stopped")
     }
     
     private func updateCurrentTime() {
@@ -168,6 +193,6 @@ class TimeTrackingManager: ObservableObject {
     }
     
     var isCurrentlyTracking: Bool {
-        return sessionStartTime != nil
+        return sessionStartTime != nil && isActive
     }
 }
